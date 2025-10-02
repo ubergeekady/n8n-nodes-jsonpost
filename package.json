@@ -1,15 +1,15 @@
 {
     "name": "n8n-nodes-jsonpost",
     "version": "0.1.0",
-    "description": "Example n8n community node",
+    "description": "n8n community node for JSONPost",
     "license": "MIT",
-    "homepage": "https://example.com",
+    "homepage": "https://jsonpost.com",
     "keywords": [
         "n8n-community-node-package"
     ],
     "author": {
         "name": "Aditya Singh",
-        "email": "blackwoodenterprises8@gmail.com"
+        "email": "ubergeekady@gmail.com"
     },
     "repository": {
         "type": "git",

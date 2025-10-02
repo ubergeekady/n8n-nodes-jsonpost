@@ -72,10 +72,6 @@ export class JSONPostTrigger implements INodeType {
 			const credentials = await this.getCredentials('jsonPostApi');
 			const apiKey = credentials.apiKey as string;
 
-			// Debug logging for endpoint loading
-			this.logger?.info('🔍 [JSONPost] Loading endpoints...');
-			this.logger?.info(`🔑 [JSONPost] API Key length: ${apiKey?.length || 0}`);
-
 			try {
 				const response = await this.helpers.request({
 					method: 'GET',
@@ -86,20 +82,15 @@ export class JSONPostTrigger implements INodeType {
 					json: true,
 				});
 
-				this.logger?.info(`✅ [JSONPost] Endpoints API response: ${JSON.stringify(response, null, 2)}`);
-
 				if (response.endpoints && Array.isArray(response.endpoints)) {
-					this.logger?.info(`📋 [JSONPost] Found ${response.endpoints.length} endpoints`);
 					return response.endpoints.map((endpoint: any) => ({
 						name: endpoint.name,
 						value: endpoint.value,
 					}));
 				}
 
-				this.logger?.warn('⚠️ [JSONPost] No endpoints found in response');
 				return [];
 			} catch (error) {
-				this.logger?.error(`❌ [JSONPost] Failed to load endpoints: ${error}`);
 				throw new Error(`Failed to load endpoints: ${error.message}`);
 			}
 		},
@@ -113,10 +104,6 @@ export class JSONPostTrigger implements INodeType {
 			const credentials = await this.getCredentials('jsonPostApi');
 			const apiKey = credentials.apiKey as string;
 
-			// Debug logging for webhook check
-			this.logger?.info('🔍 [JSONPost] Checking if webhook exists...');
-			this.logger?.info(`🔑 [JSONPost] API Key length: ${apiKey?.length || 0}`);
-
 			// Check if subscription exists by trying to get endpoints
 			// If we can successfully communicate with the API, we assume the webhook might exist
 			try {
@@ -129,11 +116,8 @@ export class JSONPostTrigger implements INodeType {
 					json: true,
 				});
 				
-				this.logger?.info(`✅ [JSONPost] Webhook check API response: ${JSON.stringify(response, null, 2)}`);
-				this.logger?.info('🔄 [JSONPost] Returning false to ensure webhook creation/update');
 				return false; // Always return false to ensure we create/update the subscription
 			} catch (error) {
-				this.logger?.error(`❌ [JSONPost] Webhook check failed: ${error}`);
 				return false;
 			}
 		},
@@ -145,21 +129,12 @@ export class JSONPostTrigger implements INodeType {
 			const credentials = await this.getCredentials('jsonPostApi');
 			const apiKey = credentials.apiKey as string;
 
-			// Debug logging for webhook creation
-			this.logger?.info('🔧 [JSONPost] Creating webhook subscription...');
-			this.logger?.info(`🔗 [JSONPost] Webhook URL: ${webhookUrl}`);
-			this.logger?.info(`📍 [JSONPost] Endpoint: ${endpoint}`);
-			this.logger?.info(`🎯 [JSONPost] Event Type: ${eventType}`);
-			this.logger?.info(`🔑 [JSONPost] API Key length: ${apiKey?.length || 0}`);
-
 			try {
 				const requestBody = {
 					endpoint_id: endpoint,
 					webhook_url: webhookUrl,
 					eventType: eventType,
 				};
-
-				this.logger?.info(`📤 [JSONPost] Request body: ${JSON.stringify(requestBody, null, 2)}`);
 
 				const response = await this.helpers.request({
 					method: 'POST',
@@ -172,8 +147,6 @@ export class JSONPostTrigger implements INodeType {
 					json: true,
 				});
 
-				this.logger?.info(`✅ [JSONPost] Webhook creation response: ${JSON.stringify(response, null, 2)}`);
-
 				if (response.success) {
 					// Store the subscription data for later use
 					const webhookData = this.getWorkflowStaticData('node');
@@ -181,15 +154,11 @@ export class JSONPostTrigger implements INodeType {
 					webhookData.webhookUrl = webhookUrl;
 					webhookData.endpointId = endpoint;
 					
-					this.logger?.info(`💾 [JSONPost] Stored webhook data: ${JSON.stringify(webhookData, null, 2)}`);
-					this.logger?.info('🎉 [JSONPost] Webhook subscription created successfully!');
 					return true;
 				}
 
-				this.logger?.warn('⚠️ [JSONPost] Webhook creation failed - response.success is false');
 				return false;
 			} catch (error) {
-				this.logger?.error(`❌ [JSONPost] Failed to create webhook subscription: ${error}`);
 				throw new Error(`Failed to create webhook subscription: ${error.message}`);
 			}
 		},
@@ -199,13 +168,7 @@ export class JSONPostTrigger implements INodeType {
 			const credentials = await this.getCredentials('jsonPostApi');
 			const apiKey = credentials.apiKey as string;
 
-			// Debug logging for webhook deletion
-			this.logger?.info('🗑️ [JSONPost] Deleting webhook subscription...');
-			this.logger?.info(`💾 [JSONPost] Webhook data: ${JSON.stringify(webhookData, null, 2)}`);
-			this.logger?.info(`🔑 [JSONPost] API Key length: ${apiKey?.length || 0}`);
-
 			if (!webhookData.webhookId) {
-				this.logger?.warn('⚠️ [JSONPost] No webhook ID found - nothing to delete');
 				return true;
 			}
 
@@ -213,8 +176,6 @@ export class JSONPostTrigger implements INodeType {
 				const requestBody = {
 					subscription_id: webhookData.webhookId,
 				};
-
-				this.logger?.info(`📤 [JSONPost] Delete request body: ${JSON.stringify(requestBody, null, 2)}`);
 
 				const response = await this.helpers.request({
 					method: 'DELETE',
@@ -227,23 +188,17 @@ export class JSONPostTrigger implements INodeType {
 					json: true,
 				});
 
-				this.logger?.info(`✅ [JSONPost] Webhook deletion response: ${JSON.stringify(response, null, 2)}`);
-
 				// Clear the stored webhook data
 				delete webhookData.webhookId;
 				delete webhookData.webhookUrl;
 				delete webhookData.endpointId;
 
-				this.logger?.info('🧹 [JSONPost] Cleared stored webhook data');
-				this.logger?.info('🎉 [JSONPost] Webhook subscription deleted successfully!');
 				return true;
 			} catch (error) {
-				this.logger?.error(`❌ [JSONPost] Failed to delete webhook subscription: ${error}`);
 				// Even if deletion fails, clear the local data
 				delete webhookData.webhookId;
 				delete webhookData.webhookUrl;
 				delete webhookData.endpointId;
-				this.logger?.info('🧹 [JSONPost] Cleared local webhook data despite deletion error');
 				return true;
 			}
 		},
@@ -254,12 +209,6 @@ export class JSONPostTrigger implements INodeType {
 		const bodyData = this.getBodyData();
 		const headerData = this.getHeaderData();
 		const queryData = this.getQueryData();
-
-		// Debug logging for incoming webhook data
-		this.logger?.info('📨 [JSONPost] Webhook received!');
-		this.logger?.info(`📄 [JSONPost] Body data: ${JSON.stringify(bodyData, null, 2)}`);
-		this.logger?.info(`📋 [JSONPost] Headers: ${JSON.stringify(headerData, null, 2)}`);
-		this.logger?.info(`🔍 [JSONPost] Query params: ${JSON.stringify(queryData, null, 2)}`);
 
 		const webhookResponse = {
 			workflowData: [
@@ -274,8 +223,6 @@ export class JSONPostTrigger implements INodeType {
 				],
 			],
 		};
-
-		this.logger?.info(`🚀 [JSONPost] Sending to workflow: ${JSON.stringify(webhookResponse, null, 2)}`);
 
 		// Return the webhook data to the workflow
 		return webhookResponse;

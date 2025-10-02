@@ -35,25 +35,8 @@ export class JSONPostApi implements ICredentialType {
 	test: ICredentialTestRequest = {
 		request: {
 			baseURL: 'https://jsonpost.com',
-			url: '/api/n8n/auth/validate',
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'x-n8n-api-key': '={{$credentials.apiKey}}',
-			},
-			body: {
-				n8n_api_key: '={{$credentials.apiKey}}',
-			},
+			url: '/api/n8n/projects/endpoints',
+			method: 'GET',
 		},
-		rules: [
-			{
-				type: 'responseSuccessBody',
-				properties: {
-					key: 'valid',
-					value: true,
-					message: 'API key is valid',
-				},
-			},
-		],
 	};
 }
