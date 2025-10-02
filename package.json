@@ -1,6 +1,6 @@
 {
     "name": "n8n-nodes-jsonpost",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "n8n community node for JSONPost",
     "license": "MIT",
     "homepage": "https://jsonpost.com",
@@ -15,27 +15,27 @@
         "type": "git",
         "url": "https://github.com/ubergeekady/n8n-nodes-jsonpost"
     },
-   "scripts": {
-		"build": "n8n-node build",
-		"build:watch": "tsc --watch",
-		"dev": "n8n-node dev",
-		"lint": "n8n-node lint",
-		"lint:fix": "n8n-node lint --fix",
-		"release": "n8n-node release",
-		"prepublishOnly": "n8n-node prerelease"
-	},
+    "scripts": {
+        "build": "n8n-node build",
+        "build:watch": "tsc --watch",
+        "dev": "n8n-node dev",
+        "lint": "n8n-node lint",
+        "lint:fix": "n8n-node lint --fix",
+        "release": "n8n-node release",
+        "prepublishOnly": "n8n-node prerelease"
+    },
     "files": [
         "dist"
     ],
-   "n8n": {
-    "n8nNodesApiVersion": 1,
-    "credentials": [
-      "dist/credentials/JSONPostApi.credentials.js"
-    ],
-    "nodes": [
-      "dist/nodes/JSONPost/JsonPostTrigger.node.ts"
-    ]
-  },
+    "n8n": {
+        "n8nNodesApiVersion": 1,
+        "credentials": [
+            "dist/credentials/JSONPostApi.credentials.js"
+        ],
+        "nodes": [
+            "dist/nodes/JSONPost/JsonPostTrigger.node.ts"
+        ]
+    },
     "devDependencies": {
         "@n8n/node-cli": "*",
         "eslint": "9.32.0",
