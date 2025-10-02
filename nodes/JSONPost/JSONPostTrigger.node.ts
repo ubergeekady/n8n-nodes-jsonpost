@@ -6,7 +6,15 @@ import {
 	IWebhookResponseData,
 	ILoadOptionsFunctions,
 	INodePropertyOptions,
+	NodeApiError,
+	NodeOperationError,
+	IHttpRequestMethods,
 } from 'n8n-workflow';
+
+interface EndpointResponse {
+	name: string;
+	value: string;
+}
 
 export class JSONPostTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -38,7 +46,7 @@ export class JSONPostTrigger implements INodeType {
 		],
 		properties: [
 			{
-				displayName: 'Endpoint',
+				displayName: 'Endpoint Name or ID',
 				name: 'endpoint',
 				type: 'options',
 				typeOptions: {
@@ -46,7 +54,7 @@ export class JSONPostTrigger implements INodeType {
 				},
 				required: true,
 				default: '',
-				description: 'The JSONPost endpoint to listen to for form submissions',
+				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
 			},
 			{
 				displayName: 'Event Type',
@@ -83,7 +91,7 @@ export class JSONPostTrigger implements INodeType {
 				});
 
 				if (response.endpoints && Array.isArray(response.endpoints)) {
-					return response.endpoints.map((endpoint: any) => ({
+					return response.endpoints.map((endpoint: EndpointResponse) => ({
 						name: endpoint.name,
 						value: endpoint.value,
 					}));
@@ -91,114 +99,121 @@ export class JSONPostTrigger implements INodeType {
 
 				return [];
 			} catch (error) {
-				throw new Error(`Failed to load endpoints: ${error.message}`);
+				const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+				throw new NodeApiError(this.getNode(), { message: `Failed to load endpoints: ${errorMessage}` });
 			}
 		},
 		},
 	};
 
-	// @ts-ignore
 	webhookMethods = {
 		default: {
 			async checkExists(this: IHookFunctions): Promise<boolean> {
 			const credentials = await this.getCredentials('jsonPostApi');
 			const apiKey = credentials.apiKey as string;
 
-			// Check if subscription exists by trying to get endpoints
-			// If we can successfully communicate with the API, we assume the webhook might exist
 			try {
-				const response = await this.helpers.request({
-					method: 'GET',
-					url: 'https://jsonpost.com/api/n8n/projects/endpoints',
+				const webhookData = this.getWorkflowStaticData('node');
+
+				// Make API call to check if webhook exists
+				const requestOptions = {
+					method: 'POST' as IHttpRequestMethods,
+					uri: 'https://jsonpost.com/api/n8n/webhooks/check',
 					headers: {
+						'Content-Type': 'application/json',
 						'x-n8n-api-key': apiKey,
 					},
+					body: {
+						webhook_id: webhookData.webhookId as string,
+					},
 					json: true,
-				});
-				
-				return false; // Always return false to ensure we create/update the subscription
-			} catch (error) {
+				};
+
+				await this.helpers.request(requestOptions);
+
+				return true;
+			} catch {
 				return false;
 			}
 		},
 
 			async create(this: IHookFunctions): Promise<boolean> {
-			const webhookUrl = this.getNodeWebhookUrl('default') as string;
-			const endpoint = this.getNodeParameter('endpoint') as string;
-			const eventType = this.getNodeParameter('eventType', 'form_submission') as string;
 			const credentials = await this.getCredentials('jsonPostApi');
 			const apiKey = credentials.apiKey as string;
+			const endpoint = this.getNodeParameter('endpoint') as string;
+			const eventType = this.getNodeParameter('eventType') as string;
+			const webhookUrl = this.getNodeWebhookUrl('default') as string;
 
 			try {
 				const requestBody = {
-					endpoint_id: endpoint,
-					webhook_url: webhookUrl,
+					endpointId: endpoint,
 					eventType: eventType,
+					webhookUrl: webhookUrl,
 				};
 
-				const response = await this.helpers.request({
-					method: 'POST',
-					url: 'https://jsonpost.com/api/n8n/subscribe',
+				const requestOptions = {
+					method: 'POST' as IHttpRequestMethods,
+					uri: 'https://jsonpost.com/api/n8n/subscribe',
 					headers: {
-						'x-n8n-api-key': apiKey,
 						'Content-Type': 'application/json',
+						'x-n8n-api-key': apiKey,
 					},
 					body: requestBody,
 					json: true,
-				});
+				};
 
-				if (response.success) {
-					// Store the subscription data for later use
+				const createResponse = await this.helpers.request(requestOptions);
+
+				if (createResponse.success && createResponse.subscription?.id) {
 					const webhookData = this.getWorkflowStaticData('node');
-					webhookData.webhookId = response.subscription.id;
-					webhookData.webhookUrl = webhookUrl;
-					webhookData.endpointId = endpoint;
-					
+					webhookData.webhookId = createResponse.subscription.id;
 					return true;
 				}
 
-				return false;
+				throw new NodeOperationError(this.getNode(), 'Failed to create webhook - no subscription ID returned');
 			} catch (error) {
-				throw new Error(`Failed to create webhook subscription: ${error.message}`);
+				const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+				throw new NodeApiError(this.getNode(), { message: `Failed to create webhook: ${errorMessage}` });
 			}
 		},
 
 			async delete(this: IHookFunctions): Promise<boolean> {
-			const webhookData = this.getWorkflowStaticData('node');
 			const credentials = await this.getCredentials('jsonPostApi');
 			const apiKey = credentials.apiKey as string;
+			const webhookData = this.getWorkflowStaticData('node');
 
 			if (!webhookData.webhookId) {
 				return true;
 			}
 
 			try {
+				const endpoint = this.getNodeParameter('endpoint') as string;
+				const webhookUrl = this.getNodeWebhookUrl('default') as string;
+				
 				const requestBody = {
-					subscription_id: webhookData.webhookId,
+					endpointId: endpoint,
+					webhookUrl: webhookUrl,
 				};
 
-				const response = await this.helpers.request({
-					method: 'DELETE',
-					url: 'https://jsonpost.com/api/n8n/unsubscribe',
+				const requestOptions = {
+					method: 'DELETE' as IHttpRequestMethods,
+					uri: 'https://jsonpost.com/api/n8n/unsubscribe',
 					headers: {
-						'x-n8n-api-key': apiKey,
 						'Content-Type': 'application/json',
+						'x-n8n-api-key': apiKey,
 					},
 					body: requestBody,
 					json: true,
-				});
+				};
 
-				// Clear the stored webhook data
+				await this.helpers.request(requestOptions);
+
+				// Clear the webhook data
 				delete webhookData.webhookId;
-				delete webhookData.webhookUrl;
-				delete webhookData.endpointId;
 
 				return true;
-			} catch (error) {
-				// Even if deletion fails, clear the local data
+			} catch {
 				delete webhookData.webhookId;
-				delete webhookData.webhookUrl;
-				delete webhookData.endpointId;
 				return true;
 			}
 		},
