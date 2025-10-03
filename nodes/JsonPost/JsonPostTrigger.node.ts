@@ -81,7 +81,7 @@ export class JSONPostTrigger implements INodeType {
 			const apiKey = credentials.apiKey as string;
 
 			try {
-				const response = await this.helpers.request({
+				const response = await this.helpers.httpRequest({
 					method: 'GET',
 					url: 'https://jsonpost.com/api/n8n/projects/endpoints',
 					headers: {
@@ -118,7 +118,7 @@ export class JSONPostTrigger implements INodeType {
 				// Make API call to check if webhook exists
 				const requestOptions = {
 					method: 'POST' as IHttpRequestMethods,
-					uri: 'https://jsonpost.com/api/n8n/webhooks/check',
+					url: 'https://jsonpost.com/api/n8n/webhooks/check',
 					headers: {
 						'Content-Type': 'application/json',
 						'x-n8n-api-key': apiKey,
@@ -129,7 +129,7 @@ export class JSONPostTrigger implements INodeType {
 					json: true,
 				};
 
-				await this.helpers.request(requestOptions);
+				await this.helpers.httpRequest(requestOptions);
 
 				return true;
 			} catch {
@@ -153,7 +153,7 @@ export class JSONPostTrigger implements INodeType {
 
 				const requestOptions = {
 					method: 'POST' as IHttpRequestMethods,
-					uri: 'https://jsonpost.com/api/n8n/subscribe',
+					url: 'https://jsonpost.com/api/n8n/subscribe',
 					headers: {
 						'Content-Type': 'application/json',
 						'x-n8n-api-key': apiKey,
@@ -162,7 +162,7 @@ export class JSONPostTrigger implements INodeType {
 					json: true,
 				};
 
-				const createResponse = await this.helpers.request(requestOptions);
+				const createResponse = await this.helpers.httpRequest(requestOptions);
 
 				if (createResponse.success && createResponse.subscription?.id) {
 					const webhookData = this.getWorkflowStaticData('node');
@@ -197,7 +197,7 @@ export class JSONPostTrigger implements INodeType {
 
 				const requestOptions = {
 					method: 'DELETE' as IHttpRequestMethods,
-					uri: 'https://jsonpost.com/api/n8n/unsubscribe',
+					url: 'https://jsonpost.com/api/n8n/unsubscribe',
 					headers: {
 						'Content-Type': 'application/json',
 						'x-n8n-api-key': apiKey,
@@ -206,7 +206,7 @@ export class JSONPostTrigger implements INodeType {
 					json: true,
 				};
 
-				await this.helpers.request(requestOptions);
+				await this.helpers.httpRequest(requestOptions);
 
 				// Clear the webhook data
 				delete webhookData.webhookId;
