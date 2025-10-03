@@ -40,3 +40,6 @@ export class JSONPostApi implements ICredentialType {
 		},
 	};
 }
+
+// Export the class as named export for n8n to load it correctly
+export { JSONPostApi as JsonPostApi };

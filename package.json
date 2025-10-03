@@ -33,7 +33,7 @@
             "dist/credentials/JsonPostApi.credentials.js"
         ],
         "nodes": [
-            "dist/nodes/JsonPost/JsonPostTrigger.node.ts"
+            "dist/nodes/JsonPost/JsonPostTrigger.node.js"
         ]
     },
     "devDependencies": {

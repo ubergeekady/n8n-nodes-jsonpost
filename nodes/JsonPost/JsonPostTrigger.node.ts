@@ -243,3 +243,6 @@ export class JSONPostTrigger implements INodeType {
 		return webhookResponse;
 	}
 }
+
+// Export the class as default for n8n to load it correctly
+export { JSONPostTrigger as JsonPostTrigger };
