@@ -5,9 +5,9 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export class JSONPostApi implements ICredentialType {
+export class JsonPostApi implements ICredentialType {
 	name = 'jsonPostApi';
-	displayName = 'JSONPost API';
+	displayName = 'JsonPost API';
 	documentationUrl = 'https://jsonpost.com/docs';
 	properties: INodeProperties[] = [
 		{
@@ -19,7 +19,7 @@ export class JSONPostApi implements ICredentialType {
 			},
 			default: '',
 			required: true,
-			description: 'The JSONPost n8n API key from your dashboard (64 characters)',
+			description: 'The JsonPost n8n API key from your dashboard (64 characters)',
 		},
 	];
 
@@ -40,6 +40,3 @@ export class JSONPostApi implements ICredentialType {
 		},
 	};
 }
-
-// Export the class as named export for n8n to load it correctly
-export { JSONPostApi as JsonPostApi };
