@@ -18,15 +18,15 @@ interface EndpointResponse {
 
 export class JSONPostTrigger implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'JSONPost Trigger',
+		displayName: 'CrispForms Trigger',
 		name: 'jsonPostTrigger',
-		icon: { light: 'file:jsonpost.png', dark: 'file:jsonpost.dark.png' },
+		icon: { light: 'file:crispforms.png', dark: 'file:crispforms.dark.png' },
 		group: ['trigger'],
 		version: 1,
 		subtitle: '={{$parameter["endpoint"]}}',
-		description: 'Starts the workflow when a form is submitted to JSONPost',
+		description: 'Starts the workflow when a form is submitted to CrispForms',
 		defaults: {
-			name: 'JSONPost Trigger',
+			name: 'CrispForms Trigger',
 		},
 		inputs: [],
 		outputs: ['main'],
@@ -83,7 +83,7 @@ export class JSONPostTrigger implements INodeType {
 			try {
 				const response = await this.helpers.httpRequest({
 					method: 'GET',
-					url: 'https://jsonpost.com/api/n8n/projects/endpoints',
+					url: 'https://crispforms.com/api/n8n/projects/endpoints',
 					headers: {
 						'x-n8n-api-key': apiKey,
 					},
@@ -118,7 +118,7 @@ export class JSONPostTrigger implements INodeType {
 				// Make API call to check if webhook exists
 				const requestOptions = {
 					method: 'POST' as IHttpRequestMethods,
-					url: 'https://jsonpost.com/api/n8n/webhooks/check',
+					url: 'https://crispforms.com/api/n8n/webhooks/check',
 					headers: {
 						'Content-Type': 'application/json',
 						'x-n8n-api-key': apiKey,
@@ -153,7 +153,7 @@ export class JSONPostTrigger implements INodeType {
 
 				const requestOptions = {
 					method: 'POST' as IHttpRequestMethods,
-					url: 'https://jsonpost.com/api/n8n/subscribe',
+					url: 'https://crispforms.com/api/n8n/subscribe',
 					headers: {
 						'Content-Type': 'application/json',
 						'x-n8n-api-key': apiKey,
@@ -197,7 +197,7 @@ export class JSONPostTrigger implements INodeType {
 
 				const requestOptions = {
 					method: 'DELETE' as IHttpRequestMethods,
-					url: 'https://jsonpost.com/api/n8n/unsubscribe',
+					url: 'https://crispforms.com/api/n8n/unsubscribe',
 					headers: {
 						'Content-Type': 'application/json',
 						'x-n8n-api-key': apiKey,

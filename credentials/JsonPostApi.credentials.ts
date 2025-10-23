@@ -8,7 +8,7 @@ import {
 export class JsonPostApi implements ICredentialType {
 	name = 'jsonPostApi';
 	displayName = 'JsonPost API';
-	documentationUrl = 'https://jsonpost.com/docs';
+	documentationUrl = 'https://crispforms.com/docs';
 	properties: INodeProperties[] = [
 		{
 			displayName: 'API Key',
@@ -19,7 +19,7 @@ export class JsonPostApi implements ICredentialType {
 			},
 			default: '',
 			required: true,
-			description: 'The JsonPost n8n API key from your dashboard (64 characters)',
+			description: 'The CrispForms n8n API key from your dashboard (64 characters)',
 		},
 	];
 
@@ -34,7 +34,7 @@ export class JsonPostApi implements ICredentialType {
 
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: 'https://jsonpost.com',
+			baseURL: 'https://crispforms.com',
 			url: '/api/n8n/projects/endpoints',
 			method: 'GET',
 		},
